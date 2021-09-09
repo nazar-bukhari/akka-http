@@ -4,13 +4,15 @@ import akka.http.scaladsl.Http
 import akka.Done
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
 import spray.json.DefaultJsonProtocol._
 
 import scala.io.StdIn
-
 import scala.concurrent.Future
+import scala.util.Random
 
 object HttpServerRouting {
 
@@ -37,6 +39,9 @@ object HttpServerRouting {
     result.find(item => item.id == itemId)
   }
 
+  val numbers = Source.fromIterator(() =>
+    Iterator.continually(Random.nextInt()))
+
   def main(args: Array[String]): Unit = {
     val route: Route =
       concat(
@@ -48,6 +53,17 @@ object HttpServerRouting {
               case _ => complete(StatusCodes.NotFound)
             }
 //            complete(optionalItem)
+          }
+        },
+        path("random") {
+          get {
+            complete(
+              HttpEntity(
+                ContentTypes.`text/plain(UTF-8)`,
+                // transform each number to a chunk of bytes
+                numbers.map(n => ByteString(s"$n\n"))
+              )
+            )
           }
         },
         get{
