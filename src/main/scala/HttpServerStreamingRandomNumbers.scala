@@ -30,7 +30,7 @@ object HttpServerStreamingRandomNumbers {
     }
 //    streaming requests means that the server decides how fast the remote client can push the data of the request body.
 //    curl --limit-rate 50b 127.0.0.1:8080/random
-    
+
     val bindingFuture = Http().newServerAt("localhost", 8080).bind(route)
     StdIn.readLine()
     bindingFuture.
